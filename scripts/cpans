@@ -1,0 +1,165 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+use lib 'lib';
+use App::cpansearch;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
+
+package Handler::Install;
+use base qw(Tatsumaki::Handler);
+use Tatsumaki::MessageQueue;
+
+sub get {
+    my ( $self, $name ) = @_;
+
+}
+
+
+package Handler::Search::mxhr;
+use base qw(Tatsumaki::Handler);
+
+# XXX:
+
+
+package Handler::Search;
+use base qw(Tatsumaki::Handler);
+
+sub post {
+    my $self = shift;
+    # my $keyword = $self->request->param( 'keyword' );
+    my $pattern = $self->request->param( 'pattern' );
+    # $pattern = qr/$pattern/;
+    my $index = App::cpansearch->index;
+    my @result = ( );
+    for my $item ( @$index ) {
+        push @result , $item if( $item->[0] =~ /$pattern/ );
+        last if @result > 50;
+    }
+    $self->write( \@result );
+}
+
+
+package Handler::Index;
+use base qw(Tatsumaki::Handler);
+
+sub get {
+    my $self = shift;
+    $self->render( 'index.html' );
+}
+
+package Handler::Listener;
+use base qw(Tatsumaki::Handler);
+use Tatsumaki::MessageQueue;
+
+sub get {
+
+}
+
+package main;
+use Plack;
+use Plack::Runner;
+use File::ShareDir;
+use Plack::Builder;
+use File::Basename qw(dirname);
+use File::HomeDir;
+
+
+$|++;
+
+my $shareroot = 
+    ( -e "./share" ) 
+        ? 'share' 
+        : File::ShareDir::dist_dir( "App-cpansearch" );
+
+my $mirror = 'http://cpan.nctu.edu.tw/';
+my $localfile = File::Spec->catfile(File::HomeDir->my_home(), '.cpanspp.gz');
+
+warn $localfile;
+
+sub make_mirror {
+    if ( 1 || should_get_index()) {
+        require LWP::UserAgent;
+        require File::Temp;
+
+        my $ua = LWP::UserAgent->new(
+            timeout => 20,
+            agent   => "$0/$App::cpansearch::VERSION",
+        );
+        my $url = "$mirror/modules/02packages.details.txt.gz";
+        my $tmp = File::Temp->new();
+
+        print "Downloading mirror...\n";
+        # $ua->mirror($url, $tmp);
+
+        print "Done\n";
+
+        my $input;
+        my $output;
+        local $/;
+
+        use File::Copy qw(copy);
+        copy( "/home/c9s/.cpanplus/02packages.details.txt.gz" , $tmp );
+
+        open my $ifh, '<', "$tmp" or die "cannot open file: $tmp";
+        $input = <$ifh>;
+        close $ifh;
+
+        my $status = gunzip \$input => \$output
+            or die "gunzip failed: $GunzipError\n";
+
+        open my $ofh, '>', "$localfile" or die "cannot open file: $localfile";
+        print $ofh $output;
+        close $ofh;
+
+#         while (<$ifh>) {
+#             my ($mod,$ver) = split /\s/, $_;
+#             next if $ver eq 'undef';
+#             print {$ofh} "$mod\n";
+#         }
+
+    }
+}
+
+sub should_get_index {
+    my @stat = stat($localfile) or return 1;
+    return 1 if $stat[9] < time()-24*60*60; # 9 mtime
+    return 0;
+}
+
+sub prepare_index {
+    my $file = shift;
+    my $index = App::cpansearch->index;
+
+    open my $fh , "<" , $file;
+    my $line;
+    while ( $line = <$fh> ) {
+        chomp( $line );
+        my ( $mod, $ver, $path ) = split /\s+/, $line;
+        $ver =~ s/undef//g;
+        push @$index, [ $mod, $ver, $path ];
+    }
+    close $fh;
+    print "Index Ready\n";
+}
+
+make_mirror();
+prepare_index( $localfile );
+
+# search($localfile, $pattern);
+
+
+
+use Tatsumaki;
+use Tatsumaki::Error;
+use Tatsumaki::Application;
+my $app = Tatsumaki::Application->new([
+    '/' => 'Handler::Index',
+    '/search' => 'Handler::Search',
+    '/install/([\w:]+)' => "Handler::Install"
+]);
+$app->template_path( $shareroot . "/templates" );
+$app->static_path( $shareroot . "/static" );
+
+my $runner = Plack::Runner->new;
+$runner->parse_options(@ARGV);
+$runner->run($app->psgi_app);

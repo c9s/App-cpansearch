@@ -1,0 +1,16 @@
+
+
+1. make local mirror automatically and make cache. (should find sources from minicpan)
+2. Support mirror update command.
+3. Support simple search:  output result to screen , and support regexp
+4. Curses::UI integration
+
+* Google sidewiki support
+* Bookmark
+* E-mail(?)
+* Support Twitter(?)
+* Launch Browser
+* Show dependencies (from META.yml)
+* CPAN metadb (support)
+* Download source file and convert it into pod 
+    when viewing module documentation and is not installed locally.
