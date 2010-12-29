@@ -1,9 +1,90 @@
 
 
+
+== Steps
+
 1. make local mirror automatically and make cache. (should find sources from minicpan)
 2. Support mirror update command.
 3. Support simple search:  output result to screen , and support regexp
 4. Curses::UI integration
+5. KeyMapping 
+
+== Abstract
+
+    App::cpansearch::Config -- config loader
+
+    App::cpansearch::SourceList     -- source list reader, writer
+
+        $path = $sourcelist->find_minicpan();
+        if( $path ) {
+            $sourcelist->read( $path );
+
+        } else {
+            $sourcelist->get( 'source list url' );
+        }
+
+        @results = $sourcelist->search( {
+                module => qr//,
+                author => qr//,
+            } );
+
+
+    App::cpansearch::ResultWindow   -- main search result window
+    App::cpansearch::MetaWindow     -- display meta module info
+    App::cpansearch::PodWindow      -- display module pod
+
+    App::cpansearch::KeyMapping     -- key mapping config
+    App::cpansearch::KeyMapping::emacs
+    App::cpansearch::KeyMapping::vim
+
+        $cui .. = ....;
+        KeyMapping->load( $cui , 'emacs' )  # setup binding
+        KeyMapping->load( $cui , 'vim' )    # setup binding
+
+    App::cpansearch::Storage::Cache::File
+    App::cpansearch::Storage::SQLite
+    App::cpansearch::Storage
+
+        $storage = ::Storage->new( 'Cache::File' , {  } );
+        $storage = ::Storage->new( 'SQLite' , {  } );
+
+        $sourcelist_data = $storage->read();  # get whole list
+        $storage->write( $sourcelist );       # write whole list
+
+        $storage->set( $key , $value );
+
+        @result = $storage->search({ module => qr// });
+        @result = $storage->search({ author => qr// });
+
+    App::cpansearch::Cache
+    App::cpansearch::Cache::File;
+    App::cpansearch::Cache::Memory;
+
+        $cache = Cache->new( 'File', {  });
+        $cache = Cache->new( 'Memory', {  });
+        $cache = Cache->new( 'Memcached', {  });
+
+        $r = $cache->get_meta( 'Catalyst' , sub {  ... code to get meta } );
+        $r = $cache->get_deps( 'Catalyst' , sub {  ... code to get deps } );
+        $r = $cache->get_pod( 'Catalyst' , sub {  ... code to get pod doc } );
+        $r = $cache->get_result( 'search keyword' , sub {  ... code to search } );
+
+    App::cpansearch::Bookmark
+    App::cpansearch::BookmarkManager
+
+        $bm_manager = BookmarkManager->new;
+        @bookmark_list = $bm_manager->list();
+        $bm_manager->set( $module_name , { other attribute } );
+        $bm_maanger->search( { module => 'name' } );
+        $bm_manager->save();
+
+    App::cpansearch::Plugin
+    App::cpansearch::Plugin::Sidewiki
+    App::cpansearch::Plugin::Twitter
+
+        Think later
+
+== Todo
 
 * Google sidewiki support
 * Bookmark
@@ -14,3 +95,6 @@
 * CPAN metadb (support)
 * Download source file and convert it into pod 
     when viewing module documentation and is not installed locally.
+* Search backpan modules
+* Search outdated modules
+
