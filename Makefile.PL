@@ -2,7 +2,9 @@ use inc::Module::Install;
 name 'App-cpansearch';
 all_from 'lib/App/cpansearch.pm';
 
-# requires '';
+requires 'Curses::UI';
+requires 'Cache::File';
+requires 'LWP::Simple';
 
 tests 't/*.t';
 author_tests 'xt';

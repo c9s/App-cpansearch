@@ -20,4 +20,5 @@ no_index:
     - xt
 resources:
   license: http://dev.perl.org/licenses/
+  repository: git://github.com/c9s/App-cpansearch.git
 version: 0.01
