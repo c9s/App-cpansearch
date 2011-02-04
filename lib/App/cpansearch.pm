@@ -8,7 +8,7 @@ __END__
 
 =head1 NAME
 
-App::cpansearch -
+App::cpansearch - cpan index search utility
 
 =head1 SYNOPSIS
 
@@ -16,11 +16,11 @@ App::cpansearch -
 
 =head1 DESCRIPTION
 
-App::cpansearch is
+** Underdevelopment **
 
 =head1 AUTHOR
 
-Default Name E<lt>default {at} example.comE<gt>
+Yo-An Lin (c9s)  <cornelius.howlE<AT>gmail.com>
 
 =head1 SEE ALSO
 

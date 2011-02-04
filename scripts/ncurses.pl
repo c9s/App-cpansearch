@@ -9,7 +9,7 @@ use Curses::UI;
 use Curses::UI;
 my $cui = new Curses::UI(
     -clear_on_exit => 1, 
-    -debug => 1,
+    # -debug => 1,
 );
 
 $cui->set_binding( sub{ exit }, "\cQ" );
@@ -20,19 +20,21 @@ my $mainw = $cui->add("testw","Window");
 
 $mainw->add(
     undef, 'Listbox',
-    -y          => 8,
+    -y          => 0,
     -padbottom  => 2,
-    -values     => [  1 .. 10 ],
-    -labels     => {  
-        1  => 'One',     2  => 'Two',
-        3  => 'Three',   4  => 'Four',
-        5  => 'Five',    6  => 'Six',
-        7  => 'Seven',   8  => 'Eight',
-        9  => 'Nine',    10 => 'Ten',
-    },
-    -width      => 20,
+    -values     => [  1 .. 100 ],
+#     -labels     => {
+#         1  => 'One',     2  => 'Two',
+#         3  => 'Three',   4  => 'Four',
+#         5  => 'Five',    6  => 'Six',
+#         7  => 'Seven',   8  => 'Eight',
+#         9  => 'Nine',    10 => 'Ten',
+#     },
+#    -labels     => { map { $_ => $_ } 1 .. 100 },
+
+    -width      => 78,
     -border     => 1,
-    -title      => 'Listbox',
+    -title      => 'CPAN Modules',
     -vscrollbar => 1,
     -onchange   => sub {  },
 );

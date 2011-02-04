@@ -5,6 +5,7 @@ all_from 'lib/App/cpansearch.pm';
 requires 'Curses::UI';
 requires 'Cache::File';
 requires 'LWP::Simple';
+requires 'BackPAN::Index';
 
 tests 't/*.t';
 author_tests 'xt';
